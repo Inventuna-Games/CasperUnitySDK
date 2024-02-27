@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using CasperSDK.Auth;
 using CasperSDK.DataStructures;
+using CasperSDK.WebRequests;
 using UnityEngine.Networking;
 
 namespace CasperSDK.NFT
@@ -27,15 +28,21 @@ namespace CasperSDK.NFT
         public Action OnTransferCEP18Started;
         public Action<ServiceResponse> OnTransferCEP18Respond;
         
-        Coroutine TransferCEP18Routine;
-        
         public IEnumerator StartTransferCEP18Routine(float Amount , string ContractHash , string TargetWalletPublicKey)
         {
             string ReturnedString = String.Empty;
             OnTransferCEP18Started?.Invoke();
 
 
-            yield return StartTransferCEP18(Amount,ContractHash,TargetWalletPublicKey,returnValue => {
+            string uri = Constants.TransferCEP18Uri;
+            
+            WWWForm body = new WWWForm();
+            body.AddField("token", AuthManager.Instance.CurrentSessionToken);
+            body.AddField("amount", Amount.ToString());
+            body.AddField("contractPackageHash", ContractHash);
+            body.AddField("recipient", TargetWalletPublicKey);
+            Debug.Log(AuthManager.Instance.CurrentSessionToken + " // " + Amount + " // " + ContractHash + " // " + TargetWalletPublicKey);
+            yield return WebRequestManager.PostRequest(uri, body, returnValue => {
                 ReturnedString = returnValue;
             });
 
@@ -46,7 +53,7 @@ namespace CasperSDK.NFT
             if (DTO.status == RequestStatus.Success)
             {
                 Application.OpenURL(Constants.WebsiteTokenConnectionURL + DTO.data);
-                TransferCEP18Routine = StartCoroutine(CheckTransactionCEP18State(DTO.data));
+                StartCoroutine(CheckTransactionCEP18State(DTO.data));
             }
             else 
             {
@@ -64,7 +71,12 @@ namespace CasperSDK.NFT
             string ReturnedString = String.Empty;
             while (true)
             {
-                yield return CheckTransferCEP18(TransactionToken , returnValue => {
+                string uri = Constants.CheckTransferCEP18Uri;
+            
+                WWWForm body = new WWWForm();
+                body.AddField("token", TransactionToken);
+
+                yield return WebRequestManager.PostRequest(uri, body,returnValue => {
                     ReturnedString = returnValue;
                 });
 
@@ -86,97 +98,26 @@ namespace CasperSDK.NFT
                 }
             }
         }
-            
-
-        #region Web Request Section
-        
-        private IEnumerator StartTransferCEP18(float Amount , string ContractHash , string TargetWalletPublicKey,System.Action<string> callback)
-        {
-            string uri = Constants.TransferCEP18Uri;
-            
-            WWWForm body = new WWWForm();
-            body.AddField("token", AuthManager.Instance.CurrentSessionToken);
-            body.AddField("amount", Amount.ToString());
-            body.AddField("contractPackageHash", ContractHash);
-            body.AddField("recipient", TargetWalletPublicKey);
-            Debug.Log(AuthManager.Instance.CurrentSessionToken + " // " + Amount + " // " + ContractHash + " // " + TargetWalletPublicKey);
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, body))
-            {
-
-                //www.SetRequestHeader("id", _walletAdress);
-
-                yield return www.SendWebRequest();
-
-                switch (www.result)
-                {
-                    case UnityWebRequest.Result.ConnectionError:
-                    case UnityWebRequest.Result.DataProcessingError:
-                        Debug.LogError(": Error: " + www.error);
-                        break;
-                    case UnityWebRequest.Result.ProtocolError:
-                        Debug.LogError( ": HTTP Error: " + www.error);
-                        //DataProvider.GetRequest("Login", "Clear", "" ,x=> { });
-                        break;
-                    case UnityWebRequest.Result.Success:
-                        Debug.Log("Received: " + www.downloadHandler.text+ "Result: " + www.result);
-
-                        callback(www.downloadHandler.text);
-                        break;
-                }
-
-            }
-
-        }
-        private IEnumerator CheckTransferCEP18(string TransactionToken , Action<string> callback)
-        {
-            string uri = Constants.CheckTransferCEP18Uri;
-            
-            WWWForm body = new WWWForm();
-            body.AddField("token", TransactionToken);
-
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, body))
-            {
-
-                //www.SetRequestHeader("id", _walletAdress);
-
-                yield return www.SendWebRequest();
-
-                switch (www.result)
-                {
-                    case UnityWebRequest.Result.ConnectionError:
-                    case UnityWebRequest.Result.DataProcessingError:
-                        Debug.LogError(": Error: " + www.error);
-                        break;
-                    case UnityWebRequest.Result.ProtocolError:
-                        Debug.LogError( ": HTTP Error: " + www.error);
-                        //DataProvider.GetRequest("Login", "Clear", "" ,x=> { });
-                        break;
-                    case UnityWebRequest.Result.Success:
-                        Debug.Log("Received: " + www.downloadHandler.text+ "Result: " + www.result);
-
-                        callback(www.downloadHandler.text);
-                        break;
-                }
-
-            }
-
-        }
-        #endregion
         #endregion
         
         #region BurnNFT
         public Action OnBurnCEP18Started;
         public Action<ServiceResponse> OnBurnCEP18Respond;
         
-        Coroutine BurnCEP18Routine;
-        
         public IEnumerator StartBurnCEP18Routine(float Amount , string ContractHash)
         {
             string ReturnedString = String.Empty;
             OnBurnCEP18Started?.Invoke();
 
-
-            yield return StartBurnCEP18(Amount,ContractHash,returnValue => {
+            string uri = Constants.BurnCEP18Uri;
+            
+            WWWForm body = new WWWForm();
+            body.AddField("token", AuthManager.Instance.CurrentSessionToken);
+            body.AddField("amount", Amount.ToString());
+            body.AddField("owner", AuthManager.Instance.CurrentAuthorisedWalletPublicKey);
+            body.AddField("contractPackageHash", ContractHash);
+            Debug.Log("Burn Started : "+AuthManager.Instance.CurrentSessionToken + " // " + Amount + " // " + ContractHash );
+            yield return WebRequestManager.PostRequest(uri, body,returnValue => {
                 ReturnedString = returnValue;
             });
 
@@ -187,7 +128,7 @@ namespace CasperSDK.NFT
             if (DTO.status == RequestStatus.Success)
             {
                 Application.OpenURL(Constants.WebsiteTokenConnectionURL + DTO.data);
-                BurnCEP18Routine = StartCoroutine(CheckBurnCEP18State(DTO.data));
+                StartCoroutine(CheckBurnCEP18State(DTO.data));
             }
             else 
             {
@@ -205,7 +146,13 @@ namespace CasperSDK.NFT
             string ReturnedString = String.Empty;
             while (true)
             {
-                yield return CheckBurnCEP18(TransactionToken , returnValue => {
+                
+                string uri = Constants.CheckBurnCEP18Uri;
+            
+                WWWForm body = new WWWForm();
+                body.AddField("token", TransactionToken);
+
+                yield return WebRequestManager.PostRequest(uri, body, returnValue => {
                     ReturnedString = returnValue;
                 });
 
@@ -227,97 +174,26 @@ namespace CasperSDK.NFT
                 }
             }
         }
-            
-
-        #region Web Request Section
-        
-        private IEnumerator StartBurnCEP18(float Amount , string ContractHash ,System.Action<string> callback)
-        {
-            string uri = Constants.BurnCEP18Uri;
-            
-            WWWForm body = new WWWForm();
-            body.AddField("token", AuthManager.Instance.CurrentSessionToken);
-            body.AddField("amount", Amount.ToString());
-            body.AddField("owner", AuthManager.Instance.CurrentAuthorisedWalletPublicKey);
-            body.AddField("contractPackageHash", ContractHash);
-            Debug.Log("Burn Started : "+AuthManager.Instance.CurrentSessionToken + " // " + Amount + " // " + ContractHash );
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, body))
-            {
-
-                //www.SetRequestHeader("id", _walletAdress);
-
-                yield return www.SendWebRequest();
-
-                switch (www.result)
-                {
-                    case UnityWebRequest.Result.ConnectionError:
-                    case UnityWebRequest.Result.DataProcessingError:
-                        Debug.LogError(": Error: " + www.error);
-                        break;
-                    case UnityWebRequest.Result.ProtocolError:
-                        Debug.LogError( ": HTTP Error: " + www.error);
-                        //DataProvider.GetRequest("Login", "Clear", "" ,x=> { });
-                        break;
-                    case UnityWebRequest.Result.Success:
-                        Debug.Log("Received: " + www.downloadHandler.text+ "Result: " + www.result);
-
-                        callback(www.downloadHandler.text);
-                        break;
-                }
-
-            }
-
-        }
-        private IEnumerator CheckBurnCEP18(string TransactionToken , Action<string> callback)
-        {
-            string uri = Constants.CheckBurnCEP18Uri;
-            
-            WWWForm body = new WWWForm();
-            body.AddField("token", TransactionToken);
-
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, body))
-            {
-
-                //www.SetRequestHeader("id", _walletAdress);
-
-                yield return www.SendWebRequest();
-
-                switch (www.result)
-                {
-                    case UnityWebRequest.Result.ConnectionError:
-                    case UnityWebRequest.Result.DataProcessingError:
-                        Debug.LogError(": Error: " + www.error);
-                        break;
-                    case UnityWebRequest.Result.ProtocolError:
-                        Debug.LogError( ": HTTP Error: " + www.error);
-                        //DataProvider.GetRequest("Login", "Clear", "" ,x=> { });
-                        break;
-                    case UnityWebRequest.Result.Success:
-                        Debug.Log("Received: " + www.downloadHandler.text+ "Result: " + www.result);
-
-                        callback(www.downloadHandler.text);
-                        break;
-                }
-
-            }
-
-        }
-        #endregion
         #endregion
         
         #region MintNFT
         public Action OnMintCEP18Started;
         public Action<ServiceResponse> OnMintCEP18Respond;
-        
-        Coroutine MintCEP18Routine;
-        
         public IEnumerator StartMintRoutine(float Amount , string ContractHash)
         {
             string ReturnedString = String.Empty;
             OnMintCEP18Started?.Invoke();
 
 
-            yield return StartMintCEP18(Amount,ContractHash,returnValue => {
+            string uri = Constants.MintCEP18ri;
+            
+            WWWForm body = new WWWForm();
+            body.AddField("token", AuthManager.Instance.CurrentSessionToken);
+            body.AddField("amount", Amount.ToString());
+            body.AddField("owner", AuthManager.Instance.CurrentAuthorisedWalletPublicKey);
+            body.AddField("contractPackageHash", ContractHash);
+            Debug.Log("Mint Started : "+AuthManager.Instance.CurrentSessionToken + " // " + Amount + " // " + ContractHash );
+            yield return WebRequestManager.PostRequest(uri, body,returnValue => {
                 ReturnedString = returnValue;
             });
 
@@ -328,7 +204,7 @@ namespace CasperSDK.NFT
             if (DTO.status == RequestStatus.Success)
             {
                 Application.OpenURL(Constants.WebsiteTokenConnectionURL + DTO.data);
-                MintCEP18Routine = StartCoroutine(CheckMintCEP18State(DTO.data));
+                StartCoroutine(CheckMintCEP18State(DTO.data));
             }
             else 
             {
@@ -346,7 +222,12 @@ namespace CasperSDK.NFT
             string ReturnedString = String.Empty;
             while (true)
             {
-                yield return CheckMintCEP18(TransactionToken , returnValue => {
+                string uri = Constants.CheckMintCEP18Uri;
+            
+                WWWForm body = new WWWForm();
+                body.AddField("token", TransactionToken);
+
+                yield return WebRequestManager.PostRequest(uri, body, returnValue => {
                     ReturnedString = returnValue;
                 });
 
@@ -368,97 +249,26 @@ namespace CasperSDK.NFT
                 }
             }
         }
-            
-
-        #region Web Request Section
-        
-        private IEnumerator StartMintCEP18(float Amount , string ContractHash ,System.Action<string> callback)
-        {
-            string uri = Constants.MintCEP18ri;
-            
-            WWWForm body = new WWWForm();
-            body.AddField("token", AuthManager.Instance.CurrentSessionToken);
-            body.AddField("amount", Amount.ToString());
-            body.AddField("owner", AuthManager.Instance.CurrentAuthorisedWalletPublicKey);
-            body.AddField("contractPackageHash", ContractHash);
-            Debug.Log("Mint Started : "+AuthManager.Instance.CurrentSessionToken + " // " + Amount + " // " + ContractHash );
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, body))
-            {
-
-                //www.SetRequestHeader("id", _walletAdress);
-
-                yield return www.SendWebRequest();
-
-                switch (www.result)
-                {
-                    case UnityWebRequest.Result.ConnectionError:
-                    case UnityWebRequest.Result.DataProcessingError:
-                        Debug.LogError(": Error: " + www.error);
-                        break;
-                    case UnityWebRequest.Result.ProtocolError:
-                        Debug.LogError( ": HTTP Error: " + www.error);
-                        //DataProvider.GetRequest("Login", "Clear", "" ,x=> { });
-                        break;
-                    case UnityWebRequest.Result.Success:
-                        Debug.Log("Received: " + www.downloadHandler.text+ "Result: " + www.result);
-
-                        callback(www.downloadHandler.text);
-                        break;
-                }
-
-            }
-
-        }
-        private IEnumerator CheckMintCEP18(string TransactionToken , Action<string> callback)
-        {
-            string uri = Constants.CheckMintCEP18Uri;
-            
-            WWWForm body = new WWWForm();
-            body.AddField("token", TransactionToken);
-
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, body))
-            {
-
-                //www.SetRequestHeader("id", _walletAdress);
-
-                yield return www.SendWebRequest();
-
-                switch (www.result)
-                {
-                    case UnityWebRequest.Result.ConnectionError:
-                    case UnityWebRequest.Result.DataProcessingError:
-                        Debug.LogError(": Error: " + www.error);
-                        break;
-                    case UnityWebRequest.Result.ProtocolError:
-                        Debug.LogError( ": HTTP Error: " + www.error);
-                        //DataProvider.GetRequest("Login", "Clear", "" ,x=> { });
-                        break;
-                    case UnityWebRequest.Result.Success:
-                        Debug.Log("Received: " + www.downloadHandler.text+ "Result: " + www.result);
-
-                        callback(www.downloadHandler.text);
-                        break;
-                }
-
-            }
-
-        }
-        #endregion
         #endregion
         
         #region ApproveCEP18
         public Action OnApproveCEP18Started;
         public Action<ServiceResponse> OnApproveCEP18Respond;
         
-        Coroutine ApproveRoutine;
-        
         public IEnumerator StartApproveCEP18Routine(float Amount , string ContractHash)
         {
             string ReturnedString = String.Empty;
             OnApproveCEP18Started?.Invoke();
 
-
-            yield return StartApproveCEP18(Amount,ContractHash,returnValue => {
+            string uri = Constants.ApproveUri;
+            
+            WWWForm body = new WWWForm();
+            body.AddField("token", AuthManager.Instance.CurrentSessionToken);
+            body.AddField("amount", Amount.ToString());
+            body.AddField("spender", AuthManager.Instance.CurrentAuthorisedWalletPublicKey);
+            body.AddField("contractPackageHash", ContractHash);
+            Debug.Log("Register Owner Started : "+AuthManager.Instance.CurrentSessionToken + " // " + Amount + " // " + ContractHash );
+            yield return WebRequestManager.PostRequest(uri, body,returnValue => {
                 ReturnedString = returnValue;
             });
 
@@ -469,7 +279,7 @@ namespace CasperSDK.NFT
             if (DTO.status == RequestStatus.Success)
             {
                 Application.OpenURL(Constants.WebsiteTokenConnectionURL + DTO.data);
-                ApproveRoutine = StartCoroutine(CheckApproveCEP18State(DTO.data));
+                StartCoroutine(CheckApproveCEP18State(DTO.data));
             }
             else 
             {
@@ -487,7 +297,12 @@ namespace CasperSDK.NFT
             string ReturnedString = String.Empty;
             while (true)
             {
-                yield return CheckApproveCEP18(TransactionToken , returnValue => {
+                string uri = Constants.CheckApproveUri;
+            
+                WWWForm body = new WWWForm();
+                body.AddField("token", TransactionToken);
+
+                yield return WebRequestManager.PostRequest(uri, body, returnValue => {
                     ReturnedString = returnValue;
                 });
 
@@ -509,82 +324,6 @@ namespace CasperSDK.NFT
                 }
             }
         }
-            
-
-        #region Web Request Section
-        
-        private IEnumerator StartApproveCEP18(float Amount , string ContractHash ,System.Action<string> callback)
-        {
-            string uri = Constants.ApproveUri;
-            
-            WWWForm body = new WWWForm();
-            body.AddField("token", AuthManager.Instance.CurrentSessionToken);
-            body.AddField("amount", Amount.ToString());
-            body.AddField("spender", AuthManager.Instance.CurrentAuthorisedWalletPublicKey);
-            body.AddField("contractPackageHash", ContractHash);
-            Debug.Log("Register Owner Started : "+AuthManager.Instance.CurrentSessionToken + " // " + Amount + " // " + ContractHash );
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, body))
-            {
-
-                //www.SetRequestHeader("id", _walletAdress);
-
-                yield return www.SendWebRequest();
-
-                switch (www.result)
-                {
-                    case UnityWebRequest.Result.ConnectionError:
-                    case UnityWebRequest.Result.DataProcessingError:
-                        Debug.LogError(": Error: " + www.error);
-                        break;
-                    case UnityWebRequest.Result.ProtocolError:
-                        Debug.LogError( ": HTTP Error: " + www.error);
-                        //DataProvider.GetRequest("Login", "Clear", "" ,x=> { });
-                        break;
-                    case UnityWebRequest.Result.Success:
-                        Debug.Log("Received: " + www.downloadHandler.text+ "Result: " + www.result);
-
-                        callback(www.downloadHandler.text);
-                        break;
-                }
-
-            }
-
-        }
-        private IEnumerator CheckApproveCEP18(string TransactionToken , Action<string> callback)
-        {
-            string uri = Constants.CheckApproveUri;
-            
-            WWWForm body = new WWWForm();
-            body.AddField("token", TransactionToken);
-
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, body))
-            {
-
-                //www.SetRequestHeader("id", _walletAdress);
-
-                yield return www.SendWebRequest();
-
-                switch (www.result)
-                {
-                    case UnityWebRequest.Result.ConnectionError:
-                    case UnityWebRequest.Result.DataProcessingError:
-                        Debug.LogError(": Error: " + www.error);
-                        break;
-                    case UnityWebRequest.Result.ProtocolError:
-                        Debug.LogError( ": HTTP Error: " + www.error);
-                        //DataProvider.GetRequest("Login", "Clear", "" ,x=> { });
-                        break;
-                    case UnityWebRequest.Result.Success:
-                        Debug.Log("Received: " + www.downloadHandler.text+ "Result: " + www.result);
-
-                        callback(www.downloadHandler.text);
-                        break;
-                }
-
-            }
-
-        }
-        #endregion
         #endregion
         
         
