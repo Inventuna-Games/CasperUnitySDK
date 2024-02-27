@@ -9,6 +9,6 @@ namespace CasperSDK.DataStructures
         public string walletPublicKey;
         public List<NFTInformation> walletNFTs;
         public List<TokenInformation> walletTokens;
-        public float walletBalance;
+        public decimal walletBalance;
     }
 }

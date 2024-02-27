@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using CasperSDK.DataStructures;
 using UnityEngine.Networking;
@@ -40,7 +39,7 @@ namespace CasperSDK.Auth
                     ReturnedString = returnValue;
                 });
 
-                var DTO = JsonUtility.FromJson<AuthDTO>(ReturnedString);
+                GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
                 Debug.Log(DTO.data + " : " + DTO.status);
                 CurrentSessionToken = DTO.data;
 
@@ -62,7 +61,7 @@ namespace CasperSDK.Auth
                     s = returnValue;
                 });
 
-                var DTO = JsonUtility.FromJson<CheckLoginDTO>(s);
+                GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(s);
                 Debug.Log(DTO.data + " : " + DTO.status);
 
                 if (DTO.status == RequestStatus.Success)
@@ -84,7 +83,7 @@ namespace CasperSDK.Auth
         #region WebRequest Section
         private IEnumerator StartSessionRequest(System.Action<string> callback)
         {
-            var uri = Constants.LoginUri;
+            string uri = Constants.LoginUri;
             using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
             {
                 yield return webRequest.SendWebRequest();
@@ -122,7 +121,7 @@ namespace CasperSDK.Auth
 
         private IEnumerator CheckSessionRequest(System.Action<string> callback)
         {
-            var uri = Constants.CheckLoginUri;
+            string uri = Constants.CheckLoginUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", CurrentSessionToken);

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using CasperSDK;
 using CasperSDK.Auth;
 using CasperSDK.DataStructures;
 using UnityEngine.Networking;
@@ -37,20 +36,20 @@ namespace CasperSDK.WalletData
         public IEnumerator UpdateWalletInformationRunner()
         {
             yield return GetWalletTokens(returnValue => {
-                currentAuthorizedWalletInformation.walletTokens = JsonUtility.FromJson<TokensDTO>(returnValue).data;
+                currentAuthorizedWalletInformation.walletTokens = JsonUtility.FromJson<GenericDTOResponse<List<TokenInformation>>>(returnValue).data;
             });
             yield return GetWalletNFTs(returnValue => {
-                currentAuthorizedWalletInformation.walletNFTs = JsonUtility.FromJson<NFTSDto>(returnValue).data;
+                currentAuthorizedWalletInformation.walletNFTs = JsonUtility.FromJson<GenericDTOResponse<List<NFTInformation>>>(returnValue).data;
             });
             yield return GetCasperBalance(returnValue => {
-                currentAuthorizedWalletInformation.walletBalance = JsonUtility.FromJson<BalanceDTO>(returnValue).data;
+                currentAuthorizedWalletInformation.walletBalance = JsonUtility.FromJson<GenericDTOResponse<decimal>>(returnValue).data;
             });
             OnWalletInformationUpdated?.Invoke(currentAuthorizedWalletInformation);
         }
         #region WebRequest Section
         private IEnumerator GetCasperBalance(System.Action<string> callback)
         {
-            var uri = Constants.GetBalanceUri;
+            string uri = Constants.GetBalanceUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", AuthManager.Instance.CurrentSessionToken);
@@ -84,7 +83,7 @@ namespace CasperSDK.WalletData
         }
         private IEnumerator GetWalletTokens(System.Action<string> callback)
         {
-            var uri = Constants.GetTokensUri;
+            string uri = Constants.GetTokensUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", AuthManager.Instance.CurrentSessionToken);
@@ -118,7 +117,7 @@ namespace CasperSDK.WalletData
         }
         private IEnumerator GetWalletNFTs(System.Action<string> callback)
         {
-            var uri = Constants.GetNFTsUri;
+            string uri = Constants.GetNFTsUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", AuthManager.Instance.CurrentSessionToken);

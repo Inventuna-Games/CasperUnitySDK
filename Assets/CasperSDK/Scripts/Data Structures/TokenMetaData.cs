@@ -1,4 +1,3 @@
-
 namespace CasperSDK.DataStructures
 {
     [System.Serializable]

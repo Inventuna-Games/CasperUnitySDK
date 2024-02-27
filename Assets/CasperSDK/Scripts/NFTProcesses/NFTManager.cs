@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using CasperSDK;
 using CasperSDK.Auth;
 using CasperSDK.DataStructures;
 using UnityEngine.Networking;
@@ -41,7 +39,7 @@ namespace CasperSDK.NFT
                 ReturnedString = returnValue;
             });
 
-            var DTO = JsonUtility.FromJson<StartTransferDTO>(ReturnedString);
+            GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
 
             Debug.Log(DTO.data + " : " + DTO.status);
 
@@ -70,7 +68,7 @@ namespace CasperSDK.NFT
                     ReturnedString = returnValue;
                 });
 
-                var DTO = JsonUtility.FromJson<CheckTransferRequestDTO>(ReturnedString);
+                GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
                 Debug.Log(DTO.data + " : " + DTO.status);
 
                 if (DTO.status == RequestStatus.Success)
@@ -94,7 +92,7 @@ namespace CasperSDK.NFT
         
         private IEnumerator StartTransferNFT(string TokenID , string ContractHash , string TargetWalletPublicKey,System.Action<string> callback)
         {
-            var uri = Constants.TransferNFTUri;
+            string uri = Constants.TransferNFTUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", AuthManager.Instance.CurrentSessionToken);
@@ -131,7 +129,7 @@ namespace CasperSDK.NFT
         }
         private IEnumerator CheckTransferNFT(string TransactionToken , Action<string> callback)
         {
-            var uri = Constants.CheckTransferNFTUri;
+            string uri = Constants.CheckTransferNFTUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", TransactionToken);
@@ -182,7 +180,7 @@ namespace CasperSDK.NFT
                 ReturnedString = returnValue;
             });
 
-            var DTO = JsonUtility.FromJson<StartBurnDTO>(ReturnedString);
+            GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
 
             Debug.Log("Burn : "+DTO.data + " : " + DTO.status);
 
@@ -211,7 +209,7 @@ namespace CasperSDK.NFT
                     ReturnedString = returnValue;
                 });
 
-                var DTO = JsonUtility.FromJson<CheckBurnRequestDTO>(ReturnedString);
+                GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
                 Debug.Log(DTO.data + " : " + DTO.status);
 
                 if (DTO.status == RequestStatus.Success)
@@ -235,7 +233,7 @@ namespace CasperSDK.NFT
         
         private IEnumerator StartBurnNFT(string TokenID , string ContractHash ,System.Action<string> callback)
         {
-            var uri = Constants.BurnNFTUri;
+            string uri = Constants.BurnNFTUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", AuthManager.Instance.CurrentSessionToken);
@@ -271,7 +269,7 @@ namespace CasperSDK.NFT
         }
         private IEnumerator CheckBurnNFT(string TransactionToken , Action<string> callback)
         {
-            var uri = Constants.CheckBurnNFTUri;
+            string uri = Constants.CheckBurnNFTUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", TransactionToken);
@@ -322,7 +320,7 @@ namespace CasperSDK.NFT
                 ReturnedString = returnValue;
             });
 
-            var DTO = JsonUtility.FromJson<StartMintDTO>(ReturnedString);
+            GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
 
             Debug.Log("Mint : "+DTO.data + " : " + DTO.status);
 
@@ -351,7 +349,7 @@ namespace CasperSDK.NFT
                     ReturnedString = returnValue;
                 });
 
-                var DTO = JsonUtility.FromJson<CheckMintRequestDTO>(ReturnedString);
+                GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
                 Debug.Log(DTO.data + " : " + DTO.status);
 
                 if (DTO.status == RequestStatus.Success)
@@ -375,7 +373,7 @@ namespace CasperSDK.NFT
         
         private IEnumerator StartMintNFT(string ContractHash ,string TokenMetaData ,System.Action<string> callback)
         {
-            var uri = Constants.MintNFTri;
+            string uri = Constants.MintNFTri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", AuthManager.Instance.CurrentSessionToken);
@@ -412,7 +410,7 @@ namespace CasperSDK.NFT
         }
         private IEnumerator CheckMintNFT(string TransactionToken , Action<string> callback)
         {
-            var uri = Constants.CheckMintNFTUri;
+            string uri = Constants.CheckMintNFTUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", TransactionToken);
@@ -463,7 +461,7 @@ namespace CasperSDK.NFT
                 ReturnedString = returnValue;
             });
 
-            var DTO = JsonUtility.FromJson<StartRegisterOwnerDTO>(ReturnedString);
+            GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
 
             Debug.Log("Register Owner : "+DTO.data + " : " + DTO.status);
 
@@ -492,7 +490,7 @@ namespace CasperSDK.NFT
                     ReturnedString = returnValue;
                 });
 
-                var DTO = JsonUtility.FromJson<CheckRegisterOwnerRequestDTO>(ReturnedString);
+                GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
                 Debug.Log(DTO.data + " : " + DTO.status);
 
                 if (DTO.status == RequestStatus.Success)
@@ -516,7 +514,7 @@ namespace CasperSDK.NFT
         
         private IEnumerator StartRegisterOwnerNFT(string TokenID , string ContractHash ,System.Action<string> callback)
         {
-            var uri = Constants.RegisterOwnerNFTUri;
+            string uri = Constants.RegisterOwnerNFTUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", AuthManager.Instance.CurrentSessionToken);
@@ -552,7 +550,7 @@ namespace CasperSDK.NFT
         }
         private IEnumerator CheckRegisterOwnerNFT(string TransactionToken , Action<string> callback)
         {
-            var uri = Constants.CheckRegisterOwnerNFTUri;
+            string uri = Constants.CheckRegisterOwnerNFTUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", TransactionToken);

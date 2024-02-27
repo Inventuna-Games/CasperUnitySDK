@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using CasperSDK;
 using CasperSDK.Auth;
 using CasperSDK.DataStructures;
 using UnityEngine.Networking;
@@ -41,7 +39,7 @@ namespace CasperSDK.NFT
                 ReturnedString = returnValue;
             });
 
-            var DTO = JsonUtility.FromJson<StartTransferCEP18DTO>(ReturnedString);
+            GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
 
             Debug.Log(DTO.data + " : " + DTO.status);
 
@@ -70,7 +68,7 @@ namespace CasperSDK.NFT
                     ReturnedString = returnValue;
                 });
 
-                var DTO = JsonUtility.FromJson<CheckTransferRequestCEP18DTO>(ReturnedString);
+                GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
                 Debug.Log(DTO.data + " : " + DTO.status);
 
                 if (DTO.status == RequestStatus.Success)
@@ -94,7 +92,7 @@ namespace CasperSDK.NFT
         
         private IEnumerator StartTransferCEP18(float Amount , string ContractHash , string TargetWalletPublicKey,System.Action<string> callback)
         {
-            var uri = Constants.TransferCEP18Uri;
+            string uri = Constants.TransferCEP18Uri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", AuthManager.Instance.CurrentSessionToken);
@@ -131,7 +129,7 @@ namespace CasperSDK.NFT
         }
         private IEnumerator CheckTransferCEP18(string TransactionToken , Action<string> callback)
         {
-            var uri = Constants.CheckTransferCEP18Uri;
+            string uri = Constants.CheckTransferCEP18Uri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", TransactionToken);
@@ -182,7 +180,7 @@ namespace CasperSDK.NFT
                 ReturnedString = returnValue;
             });
 
-            var DTO = JsonUtility.FromJson<StartBurnCEP18DTO>(ReturnedString);
+            GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
 
             Debug.Log("Burn : "+DTO.data + " : " + DTO.status);
 
@@ -211,7 +209,7 @@ namespace CasperSDK.NFT
                     ReturnedString = returnValue;
                 });
 
-                var DTO = JsonUtility.FromJson<CheckBurnRequestCEP18DTO>(ReturnedString);
+                GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
                 Debug.Log(DTO.data + " : " + DTO.status);
 
                 if (DTO.status == RequestStatus.Success)
@@ -235,7 +233,7 @@ namespace CasperSDK.NFT
         
         private IEnumerator StartBurnCEP18(float Amount , string ContractHash ,System.Action<string> callback)
         {
-            var uri = Constants.BurnCEP18Uri;
+            string uri = Constants.BurnCEP18Uri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", AuthManager.Instance.CurrentSessionToken);
@@ -272,7 +270,7 @@ namespace CasperSDK.NFT
         }
         private IEnumerator CheckBurnCEP18(string TransactionToken , Action<string> callback)
         {
-            var uri = Constants.CheckBurnCEP18Uri;
+            string uri = Constants.CheckBurnCEP18Uri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", TransactionToken);
@@ -323,7 +321,7 @@ namespace CasperSDK.NFT
                 ReturnedString = returnValue;
             });
 
-            var DTO = JsonUtility.FromJson<StartMintCEP18DTO>(ReturnedString);
+            GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
 
             Debug.Log("Mint : "+DTO.data + " : " + DTO.status);
 
@@ -352,7 +350,7 @@ namespace CasperSDK.NFT
                     ReturnedString = returnValue;
                 });
 
-                var DTO = JsonUtility.FromJson<CheckMintRequestCEP18DTO>(ReturnedString);
+                GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
                 Debug.Log(DTO.data + " : " + DTO.status);
 
                 if (DTO.status == RequestStatus.Success)
@@ -376,7 +374,7 @@ namespace CasperSDK.NFT
         
         private IEnumerator StartMintCEP18(float Amount , string ContractHash ,System.Action<string> callback)
         {
-            var uri = Constants.MintCEP18ri;
+            string uri = Constants.MintCEP18ri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", AuthManager.Instance.CurrentSessionToken);
@@ -413,7 +411,7 @@ namespace CasperSDK.NFT
         }
         private IEnumerator CheckMintCEP18(string TransactionToken , Action<string> callback)
         {
-            var uri = Constants.CheckMintCEP18Uri;
+            string uri = Constants.CheckMintCEP18Uri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", TransactionToken);
@@ -464,7 +462,7 @@ namespace CasperSDK.NFT
                 ReturnedString = returnValue;
             });
 
-            var DTO = JsonUtility.FromJson<StartApproveCEP18DTO>(ReturnedString);
+            GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
 
             Debug.Log("Approve : "+DTO.data + " : " + DTO.status);
 
@@ -493,7 +491,7 @@ namespace CasperSDK.NFT
                     ReturnedString = returnValue;
                 });
 
-                var DTO = JsonUtility.FromJson<CheckApproveRequestCEP18DTO>(ReturnedString);
+                GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
                 Debug.Log(DTO.data + " : " + DTO.status);
 
                 if (DTO.status == RequestStatus.Success)
@@ -517,7 +515,7 @@ namespace CasperSDK.NFT
         
         private IEnumerator StartApproveCEP18(float Amount , string ContractHash ,System.Action<string> callback)
         {
-            var uri = Constants.ApproveUri;
+            string uri = Constants.ApproveUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", AuthManager.Instance.CurrentSessionToken);
@@ -554,7 +552,7 @@ namespace CasperSDK.NFT
         }
         private IEnumerator CheckApproveCEP18(string TransactionToken , Action<string> callback)
         {
-            var uri = Constants.CheckApproveUri;
+            string uri = Constants.CheckApproveUri;
             
             WWWForm body = new WWWForm();
             body.AddField("token", TransactionToken);

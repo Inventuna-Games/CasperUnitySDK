@@ -1,11 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using Unity.VisualScripting.Antlr3.Runtime;
-using System.Linq;
-using UnityEngine.UI;
-using System;
 using CasperSDK;
 using CasperSDK.DataStructures;
 using CasperSDK.WalletData;
@@ -157,14 +151,14 @@ public class ServiceUIController : MonoBehaviour
         
 
         string  TokenString = "";
-        foreach (var item in walletInformation.walletTokens)
+        foreach (TokenInformation item in walletInformation.walletTokens)
         {
             TokenString += " // " + item.balance +  " "+ item.contract_package.metadata.symbol;
         }
         Tokens.SetText(TokenString);
 
         string NFTString = "";
-        foreach (var item in walletInformation.walletNFTs)
+        foreach (NFTInformation item in walletInformation.walletNFTs)
         {
             NFTString += " // " + item.token_id;
         }

@@ -1,9 +1,9 @@
 namespace CasperSDK.DataStructures
 {
     [System.Serializable]
-    public struct AuthDTO
+    public struct GenericDTOResponse<T>
     {
         public RequestStatus status;
-        public string data;
+        public T data;
     }
 }
