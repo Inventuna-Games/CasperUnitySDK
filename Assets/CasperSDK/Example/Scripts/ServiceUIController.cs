@@ -140,9 +140,9 @@ public class ServiceUIController : MonoBehaviour
         {
             InformationPanel.SetActive(true);
             SetInformationPanelLoading(true);
+            CloseAuthPanel();
+            ServiceManager.Instance.UpdateWalletInformation();
         }
-        CloseAuthPanel();
-        ServiceManager.Instance.UpdateWalletInformation();
     }
     
     void UpdateInformationPanel(WalletInformation walletInformation)

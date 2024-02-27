@@ -393,10 +393,11 @@ namespace CasperSDK.NFT
                     case UnityWebRequest.Result.ConnectionError:
                     case UnityWebRequest.Result.DataProcessingError:
                         Debug.LogError(": Error: " + www.error);
+                        callback(": Error: " + www.error);
                         break;
                     case UnityWebRequest.Result.ProtocolError:
                         Debug.LogError( ": HTTP Error: " + www.error);
-                        //DataProvider.GetRequest("Login", "Clear", "" ,x=> { });
+                        callback(": HTTP Error: " + www.error);
                         break;
                     case UnityWebRequest.Result.Success:
                         Debug.Log("Received: " + www.downloadHandler.text+ "Result: " + www.result);

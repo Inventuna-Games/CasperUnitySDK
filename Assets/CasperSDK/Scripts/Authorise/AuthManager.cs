@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using CasperSDK.DataStructures;
+using CasperSDK.WebRequests;
 using UnityEngine.Networking;
 
 namespace CasperSDK.Auth
@@ -24,7 +25,6 @@ namespace CasperSDK.Auth
         
         public string CurrentSessionToken = string.Empty;
         public string CurrentAuthorisedWalletPublicKey = string.Empty;
-        Coroutine AuthorizationRoutine;
         
         public Action OnAuthStarted;
         public Action<ServiceResponse> OnAuthRespond;
@@ -32,24 +32,27 @@ namespace CasperSDK.Auth
         public IEnumerator StartAuthorization()
         {
             string ReturnedString = String.Empty;
-            while (true)
+            OnAuthStarted?.Invoke();
+            string uri = Constants.LoginUri;
+            
+            yield return WebRequestManager.GetRequest(uri ,returnValue => {
+                ReturnedString = returnValue;
+            });
+
+            GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
+            CurrentSessionToken = DTO.data;
+
+            if (DTO.status == RequestStatus.Success)
             {
-                OnAuthStarted?.Invoke();
-                yield return StartSessionRequest(returnValue => {
-                    ReturnedString = returnValue;
-                });
-
-                GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(ReturnedString);
-                Debug.Log(DTO.data + " : " + DTO.status);
-                CurrentSessionToken = DTO.data;
-
-                if (DTO.status == RequestStatus.Success)
-                {
-                    Application.OpenURL(Constants.AuthorizeUri + CurrentSessionToken);
-                    AuthorizationRoutine = StartCoroutine(CheckAuthorizationState());
-                    break;
-                }
-                else yield return new WaitForSeconds(2);
+                Application.OpenURL(Constants.AuthorizeUri + CurrentSessionToken);
+                StartCoroutine(CheckAuthorizationState());
+            }
+            else
+            {
+                ServiceResponse DataProcessRespond = new ServiceResponse();
+                DataProcessRespond.status = RequestStatus.Failed;
+                DataProcessRespond.message = ReturnedString;
+                OnAuthRespond.Invoke(DataProcessRespond);
             }
         }
         private IEnumerator CheckAuthorizationState()
@@ -57,16 +60,20 @@ namespace CasperSDK.Auth
             string s = String.Empty;
             while (true)
             {
-                yield return CheckSessionRequest(returnValue => {
+                string uri = Constants.CheckLoginUri;
+            
+                WWWForm body = new WWWForm();
+                body.AddField("token", CurrentSessionToken);
+                
+                yield return WebRequestManager.PostRequest(uri , body , returnValue => {
                     s = returnValue;
                 });
 
                 GenericDTOResponse<string> DTO = JsonUtility.FromJson<GenericDTOResponse<string>>(s);
-                Debug.Log(DTO.data + " : " + DTO.status);
-
+                ServiceResponse DataProcessRespond = new ServiceResponse();
+                
                 if (DTO.status == RequestStatus.Success)
                 {
-                    ServiceResponse DataProcessRespond = new ServiceResponse();
                     DataProcessRespond.status = RequestStatus.Success;
                     DataProcessRespond.message = "Auth Completed";
                     OnAuthRespond?.Invoke(DataProcessRespond);
@@ -74,86 +81,19 @@ namespace CasperSDK.Auth
                     CurrentAuthorisedWalletPublicKey = DTO.data;
                     break;
                 }
-                else
+                else if(DTO.status == RequestStatus.Failed)
                 {
-                    yield return new WaitForSeconds(1);
+                    DataProcessRespond.status = RequestStatus.Failed;
+                    DataProcessRespond.message = s;
+                    OnAuthRespond?.Invoke(DataProcessRespond);
+                    break;
+                }
+                else if (DTO.status == RequestStatus.Waiting)
+                {
+                    yield return new WaitForSecondsRealtime(2);
                 }
             }
         }
-        #region WebRequest Section
-        private IEnumerator StartSessionRequest(System.Action<string> callback)
-        {
-            string uri = Constants.LoginUri;
-            using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
-            {
-                yield return webRequest.SendWebRequest();
-
-                string[] pages = uri.Split('/');
-                int page = pages.Length - 1;
-
-                switch (webRequest.result)
-                {
-                    case UnityWebRequest.Result.ConnectionError:
-                    case UnityWebRequest.Result.DataProcessingError:
-                        Debug.LogError(pages[page] + ": Error: " + webRequest.error);
-                        ServiceResponse DataProcessRespond = new ServiceResponse();
-                        DataProcessRespond.status = RequestStatus.Failed;
-                        DataProcessRespond.message = "Data Processing error on Auth Session";
-                        OnAuthRespond?.Invoke(DataProcessRespond);
-                        break;
-                    case UnityWebRequest.Result.ProtocolError:
-                        Debug.LogError(pages[page] + ": HTTP Error: " + webRequest.error);
-                        ServiceResponse ProtocolRespond = new ServiceResponse();
-                        ProtocolRespond.status = RequestStatus.Failed;
-                        ProtocolRespond.message = "Data Processing error on Auth Session";
-                        OnAuthRespond?.Invoke(ProtocolRespond);
-                        break;
-                    case UnityWebRequest.Result.Success:
-                        Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
-
-                        callback(webRequest.downloadHandler.text);
-
-                        break;
-                }
-            }
-            yield return null;
-        }
-
-        private IEnumerator CheckSessionRequest(System.Action<string> callback)
-        {
-            string uri = Constants.CheckLoginUri;
-            
-            WWWForm body = new WWWForm();
-            body.AddField("token", CurrentSessionToken);
-
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, body))
-            {
-
-                //www.SetRequestHeader("id", _walletAdress);
-
-                yield return www.SendWebRequest();
-
-                switch (www.result)
-                {
-                    case UnityWebRequest.Result.ConnectionError:
-                    case UnityWebRequest.Result.DataProcessingError:
-                        Debug.LogError(": Error: " + www.error);
-                        break;
-                    case UnityWebRequest.Result.ProtocolError:
-                        Debug.LogError( ": HTTP Error: " + www.error);
-                        //DataProvider.GetRequest("Login", "Clear", "" ,x=> { });
-                        break;
-                    case UnityWebRequest.Result.Success:
-                        Debug.Log("Received: " + www.downloadHandler.text+ "Result: " + www.result);
-
-                        callback(www.downloadHandler.text);
-                        break;
-                }
-
-            }
-
-        }
-        #endregion
     }
 }
 
